@@ -94,6 +94,8 @@ export ARM_TENANT_ID=""
 ```
 
 ---
+### 📌 Make sure you have a remote backend configured.
+
 
 ## ☁️ Setting Up Remote Backend
 
