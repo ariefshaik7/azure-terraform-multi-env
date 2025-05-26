@@ -1,18 +1,18 @@
 
-# 🌐 Azure Infrastructure with Terraform
+# 🌐 Azure Terraform Multi-Environment Infrastructure
 
-This project provisions Azure infrastructure using a **modular Terraform setup**, designed for clean, reusable, and scalable infrastructure-as-code (IaC) practices for fast, single-environment deployments.
+This project provisions Azure infrastructure using a **modular and multi-environment Terraform setup**, supporting clean, reusable, and scalable Infrastructure as Code (IaC) practices across environments such as **dev** and **prod**.
 
-It provisions common Azure resources including:
+### 🔧 Resources Provisioned
 
-- Resource Group
-- Virtual Network
-- Subnet
-- NSG (Network Security Group)
-- NIC (Network Interface)
-- Public IP
-- Virtual Machine
-- Storage Account
+- Resource Group  
+- Virtual Network  
+- Subnet  
+- Network Security Group (NSG)  
+- Network Interface Card (NIC)  
+- Public IP  
+- Virtual Machine (Linux)  
+- Storage Account  
 
 ---
 
@@ -32,11 +32,11 @@ azure-terraform-multi-env/
 │
 ├── environments/                        # Separate folders for each environment
 │   ├── dev/
-│   │   ├── main.tf                      # Calls modules with inputs
-│   │   ├── variables.tf                 # Input variable definitions
-│   │   ├── terraform.tfvars             # Input variable values (DO NOT COMMIT real values)
-│   │   ├── backend.tf                   # Defines remote backend (or uses backend.config)
-│   │   └── provider.tf                  # Azure provider block
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── terraform.tfvars
+│   │   ├── backend.tf
+│   │   └── provider.tf
 │   │
 │   └── prod/
 │       ├── main.tf
@@ -45,8 +45,8 @@ azure-terraform-multi-env/
 │       ├── backend.tf
 │       └── provider.tf
 │
-└── README.md                            # Project overview and instructions
-
+└── create-azure-tf-backend.sh           # Script to create remote backend storage
+└── README.md                            # Project overview and usage instructions
 ```
 
 ---
@@ -55,116 +55,123 @@ azure-terraform-multi-env/
 
 Each module contains:
 - `main.tf` – Resource definitions
-- `variables.tf` – Input variables
-- `outputs.tf` – Module outputs
+- `variables.tf` – Input variable declarations
+- `outputs.tf` – Outputs from the module
 
-### Modules:
-- **`resource-group`** – Creates a resource group in a chosen Azure region.
-- **`virtual-network`** – Defines a VNet with address space and subnets.
-- **`subnet`** – Creates a subnet inside the VNet.
-- **`nsg`** – Builds a Network Security Group with rule sets.
-- **`nic`** – Provisions NICs and attaches to subnets + NSGs.
-- **`public_ip`** – Allocates a public IP address.
-- **`virtual-machine`** – Creates a Linux VM with SSH key auth.
-- **`storage-account`** – Adds a general-purpose storage account.
+### Available Modules:
+- `resource-group`
+- `virtual-network`
+- `subnet`
+- `nsg`
+- `nic`
+- `public_ip`
+- `virtual-machine`
+- `storage-account`
 
 ---
 
 ## ✅ Prerequisites
 
-Ensure you have the following installed:
-
 - [Terraform](https://developer.hashicorp.com/terraform/downloads)
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-- An active Azure subscription
+- Azure subscription with permission to provision resources
 
 ---
 
-## 🔐 Authentication Methods
+## 🔐 Authentication
 
-You can authenticate Terraform with Azure using one of the following:
-
-- **Azure CLI:**  
-  Run `az login` and Terraform will auto-use your session.
-
-- **Service Principal:**  
-  Export these environment variables:
-  ```bash
-  export ARM_CLIENT_ID=""
-  export ARM_CLIENT_SECRET=""
-  export ARM_SUBSCRIPTION_ID=""
-  export ARM_TENANT_ID=""
-  ```
-
-- **Azure Cloud Shell / Managed Identity** is also supported.
-
----
-
-## ⚙️ Using `terraform.tfvars`
-
-Create a `terraform.tfvars` file in your root directory with real values like:
-
-```hcl
-location             = "centralindia"
-resource_group_name  = "rg-demo"
-
-vnet_name            = "vnet-demo"
-vnet_address_space   = ["10.0.0.0/16"]
-
-subnet_name          = "subnet-demo"
-subnet_address_prefixes = ["10.0.1.0/24"]
-
-nsg_name             = "nsg-demo"
-public_ip_name       = "public-ip-demo"
-allocation_method    = "Dynamic"
-
-nic_name             = "nic-demo"
-vm_name              = "vm-demo"
-vm_size              = "Standard_B1ls"
-computer_name        = "vm-host"
-admin_username       = "azureuser"
-public_key_path      = "~/.ssh/id_rsa.pub"
+Authenticate using **Azure CLI**:
+```bash
+az login
 ```
 
-📌 *Note: Never commit this file with real secrets or private values.*
+Or use a **Service Principal**:
+```bash
+export ARM_CLIENT_ID=""
+export ARM_CLIENT_SECRET=""
+export ARM_SUBSCRIPTION_ID=""
+export ARM_TENANT_ID=""
+```
 
 ---
 
-## 🌐 Configuring Remote Backend
+## ☁️ Setting Up Remote Backend
 
+Remote state is stored in an Azure Storage Account. Use the included script:
 
-### 📌 Make sure you have a remote backend configured.
+```bash
+bash create-azure-tf-backend.sh
+```
 
-To manage Terraform state remotely in Azure Storage, use a `backend.config` file:
+This script will:
+- Create a resource group
+- Create a uniquely named storage account
+- Create a blob container named `tfstate`
+
+Then create a `backend.config` file per environment:
 
 ```hcl
-resource_group_name  = "demo-rg"
-storage_account_name = "demostorage123"
+resource_group_name  = "myResourceGroup"
+storage_account_name = "uniquestorage1716720847"
 container_name       = "tfstate"
-key                  = "terraform.tfstate"
+key                  = "dev/terraform.tfstate"
 ```
 
-Initialize Terraform with it:
-
+Initialize Terraform using:
 ```bash
 terraform init -backend-config="backend.config"
 ```
 
-✅ *Do not commit real backend configs. Use placeholders or `.gitignore`.*
+---
+
+## 📂 Environment Example: `dev`
+
+Navigate to the `dev/` folder:
+
+```bash
+cd environments/dev
+```
 
 ---
 
-## 🚀 Usage
+## 🔧 Example `terraform.tfvars`
 
-1. **Clone this repository**:
-    ```bash
-    git clone https://github.com/yourusername/azure-terraform-infra.git
-    cd azure-terraform-infra
-    ```
+```hcl
+location               = "eastus"
+resource_group_name    = "rg-dev"
 
-2. **Login to Azure**:
+vnet_name              = "vnet-dev"
+vnet_address_space     = ["10.0.0.0/16"]
+
+subnet_name            = "subnet-dev"
+subnet_address_prefixes = ["10.0.1.0/24"]
+
+nsg_name               = "nsg-dev"
+public_ip_name         = "pip-dev"
+allocation_method      = "Dynamic"
+
+nic_name               = "nic-dev"
+vm_name                = "vm-dev"
+vm_size                = "Standard_B1ls"
+computer_name          = "devhost"
+admin_username         = "azureuser"
+public_key_path        = "~/.ssh/id_rsa.pub"
+```
+
+⚠️ **Do not commit this file if it contains sensitive values.**
+
+---
+
+## 🚀 Usage Steps
+
+1. **Login to Azure**:
     ```bash
     az login
+    ```
+
+2. **Go to an environment** (e.g., `dev`):
+    ```bash
+    cd environments/dev
     ```
 
 3. **Initialize Terraform**:
@@ -172,43 +179,38 @@ terraform init -backend-config="backend.config"
     terraform init -backend-config="backend.config"
     ```
 
-4. **Validate configuration**:
+4. **Validate your configuration**:
     ```bash
     terraform validate
     ```
 
-5. **Preview the changes**:
+5. **Plan the infrastructure**:
     ```bash
     terraform plan -var-file="terraform.tfvars"
     ```
 
-6. **Apply the configuration**:
+6. **Apply the infrastructure**:
     ```bash
     terraform apply -var-file="terraform.tfvars"
     ```
 
-7. **View Outputs**:
+7. **Output the results**:
     ```bash
     terraform output
     ```
 
-8. **To refresh state** (if needed):
-    ```bash
-    terraform refresh
-    ```
-
-9. **To destroy resources**:
+8. **To destroy the environment**:
     ```bash
     terraform destroy -var-file="terraform.tfvars"
     ```
 
 ---
 
-## 🛑 Recommended `.gitignore`
+## 🔒 Recommended `.gitignore`
 
-```bash
+```gitignore
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
 .terraform/
 terraform.tfvars
 backend.config
@@ -221,13 +223,10 @@ backend.config
 
 ## 📄 License
 
-This project is open-source and available under the [MIT License](LICENSE).
+This project is open-sourced under the [MIT License](LICENSE).
 
 ---
 
-## 🙌 Contributions
+## 🤝 Contributions
 
-Feel free to fork, improve, and submit PRs!
-
----
-
+Feel free to fork this repo, open issues, and submit pull requests to improve and expand the setup!
