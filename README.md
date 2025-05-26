@@ -102,7 +102,7 @@ export ARM_TENANT_ID=""
 Remote state is stored in an Azure Storage Account. Use the included script:
 
 ```bash
-bash create-azure-tf-backend.sh
+bash setup-backend.sh
 ```
 
 This script will:
