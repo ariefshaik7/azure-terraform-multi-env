@@ -1,7 +1,7 @@
 
 # 🌐 Azure Terraform Multi-Environment Infrastructure
 
-This project provisions Azure infrastructure using a **modular and multi-environment Terraform setup**. It supports scalable, reusable IaC practices across environments like **dev** and **prod**, with state managed via a remote backend.
+This project provisions Azure infrastructure using a **modular and multi-environment Terraform setup**. It supports scalable, reusable IaC practices across environments like **dev** and **prod**, with state managed via a remote backend for each environments for complete isolation.
 
 ### 🔧 Resources Provisioned
 
